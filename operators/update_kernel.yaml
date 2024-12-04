@@ -1,0 +1,7 @@
+- name: Update os kernel
+  hosts: "{{ target_hosts }}"
+  become: yes
+  vars_files:
+    - ../vars/main.yaml
+  roles:
+    - ../roles/kernel

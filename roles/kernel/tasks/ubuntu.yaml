@@ -1,0 +1,54 @@
+- name: Update apt source
+  copy:
+    src: "{{ item.file }}"
+    dest: /etc/apt/sources.list
+    backup: yes
+  loop:
+    - { file: "../files/ububtu20.04.sources.list", os_type: "Ubuntu", os_version: "20.04", arch: "x86_64" }
+    - { file: "../files/ububtu22.04.sources.list", os_type: "Ubuntu", os_version: "22.04", arch: "x86_64" }
+    - { file: "../files/ububtu24.04.sources.list", os_type: "Ubuntu", os_version: "24.04", arch: "x86_64" }
+    - { file: "../files/ububtu-ports20.04.sources.list", os_type: "Ubuntu", os_version: "20.04", arch: "arrch64" }
+    - { file: "../files/ububtu-ports22.04.sources.list", os_type: "Ubuntu", os_version: "22.04", arch: "arrch64" }
+    - { file: "../files/ububtu-ports24.04.sources.list", os_type: "Ubuntu", os_version: "24.04", arch: "arrch64" }
+  when:
+    - (ansible_facts['distribution'] == item.os_type and ansible_facts['distribution_version'] == item.os_version and ansible_facts['architecture'] == item.arch)
+
+- name: Install new kernel related packages
+  apt:
+    update_cache: yes
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "linux-image-{{ ubuntu_kernel }}-generic"
+    - "linux-headers-{{ ubuntu_kernel }}-generic"
+    - "linux-modules-{{ ubuntu_kernel }}-generic"
+    - "linux-modules-extra-{{ ubuntu_kernel }}-generic"
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Update initramfs
+  shell: update-initramfs -u -k {{ ubuntu_kernel }}-generic
+  register: update_initramfs_result
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Print update initramfs result
+  debug:
+    var: update_initramfs_result
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Update grub
+  shell: sed -i "s|^\(GRUB_DEFAULT=\)\(.*\)|\1\"Advanced options for Ubuntu>Ubuntu, with Linux {{ ubuntu_kernel }}-generic\"|" /etc/default/grub
+  register: update_grub_result
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Print update grub result
+  debug:
+    var: update_grub_result
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+
+- name: Reboot
+  reboot:
+    reboot_timeout: 600
+    test_command: uptime
+    pre_reboot_delay: 3
+    post_reboot_delay: 6

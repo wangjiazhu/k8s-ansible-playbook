@@ -1,0 +1,10 @@
+- name: Add k8s node
+  hosts: "{{ target_hosts }}"
+  become: yes
+  vars_files:
+    - ../vars/main.yaml
+  roles:
+    # - ../roles/prepare
+    # - ../roles/docker
+    # - ../roles/cri-dockerd
+    - ../roles/kube

@@ -1,0 +1,53 @@
+- name: Install related utils to prepare apt source list
+  apt:
+    update_cache: yes
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "apt-transport-https"
+    - "ca-certificates"
+    - "curl"
+    - "software-properties-common"
+    - "gnupg"
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Prepare apt source list
+  shell: "{{ item }}"
+  loop:
+    - "mkdir -p /etc/apt/keyrings"
+    - "chmod 0755 /etc/apt/keyrings"
+    - "rm -rf /etc/apt/keyrings/docker-ce-apt-keyring.gpg"
+    - "curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg |gpg --dearmor -o /etc/apt/keyrings/docker-ce-apt-keyring.gpg"
+    - "chmod a+r /etc/apt/keyrings/docker-ce-apt-keyring.gpg"
+    - 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker-ce-apt-keyring.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"|tee /etc/apt/sources.list.d/docker-ce.list'
+    - "apt update"
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+
+- name: Install docker-ce & docker-ce-cli
+  apt:
+    update_cache: yes
+    name: "{{ item.name }}"
+    state: present
+  loop: 
+    # 5:25.0.4-1~ubuntu.22.04~jammy
+    - { name: "docker-ce-cli=5:{{ docker_version }}-1~ubuntu.20.04~focal", os_version: "20.04" }
+    - { name: "docker-ce=5:{{ docker_version }}-1~ubuntu.20.04~focal", os_version: "20.04" }
+    - { name: "docker-ce-cli=5:{{ docker_version }}-1~ubuntu.22.04~jammy", os_version: "22.04" }
+    - { name: "docker-ce=5:{{ docker_version }}-1~ubuntu.22.04~jammy", os_version: "22.04" }
+    - { name: "docker-ce-cli=5:{{ docker_version }}-1~ubuntu.24.04~noble", os_version: "24.04" }
+    - { name: "docker-ce=5:{{ docker_version }}-1~ubuntu.24.04~noble", os_version: "24.04" }
+  when:
+    - (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] == item.os_version)
+
+- name: Set docker daemon.json
+  copy:
+    src: files/daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: Start docker service
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

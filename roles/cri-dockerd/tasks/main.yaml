@@ -1,0 +1,2 @@
+- name: Install cri-dockerd on x86 server
+  include_tasks: install.yaml

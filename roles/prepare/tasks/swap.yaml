@@ -1,0 +1,8 @@
+- name: Temporarily shutdown swap
+  shell: "swapoff -a"
+
+- name: Permanent shutdown swap
+  replace:
+    path: /etc/fstab
+    regexp: '^(.*swap.*)$'
+    replace: '#\1'

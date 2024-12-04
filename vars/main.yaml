@@ -1,0 +1,6 @@
+# define the global vars
+ubuntu_kernel: "6.8.0-48"
+rocky_kernel: "6.11.5-1"
+docker_version: "25.0.4"
+kubernetes_version: "1.28.8"
+cri_dockerd_version: "0.3.14"

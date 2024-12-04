@@ -1,0 +1,15 @@
+- name: Temporarily load kernel modules
+  command: "modprobe {{ item }}"
+  loop:
+    - overlay
+    - br_netfilter
+  register: kernel_modules_result
+
+- name: Permanent load kernel modules
+  copy:
+    src: files/k8s-kernel-modules.conf
+    dest: /etc/modules-load.d/k8s-kernel-modules.conf
+
+- name: Print kernel modules result
+  debug:
+    var: kernel_modules_result

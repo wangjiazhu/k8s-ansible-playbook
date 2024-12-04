@@ -1,0 +1,29 @@
+- name: Prepare kubernets apt source list
+  shell: "{{ item }}"
+  loop:
+    - apt update
+    - apt install -y apt-transport-https
+    - mkdir -p /etc/apt/keyrings
+    - chmod 0755 /etc/apt/keyrings
+    - rm -rf /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - curl -fsSL https://mirrors.aliyun.com/kubernetes-new/core/stable/v{{ kubernetes_version.split('.')[0] }}.{{ kubernetes_version.split('.')[1] }}/deb/Release.key |gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - chmod a+r /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://mirrors.aliyun.com/kubernetes-new/core/stable/v{{ kubernetes_version.split('.')[0] }}.{{ kubernetes_version.split('.')[1] }}/deb/ /" |tee /etc/apt/sources.list.d/kubernetes.list
+    - apt update
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Install kubelet & kubeadm & kubectl
+  apt:
+    update_cache: yes
+    name:
+      - kubeadm={{ kubernetes_version }}*
+      - kubelet={{ kubernetes_version }}*
+      - kubectl={{ kubernetes_version }}*
+    state: present
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Set kubelet args
+  shell: "{{ item }}"
+  loop:
+    - sed -i 's|\(KUBELET_EXTRA_ARGS=\)|\1\"--container-runtime-endpoint=unix:///var/run/cri-dockerd.sock\"|g' /etc/sysconfig/kubelet
+    - systemctl enable kubelet

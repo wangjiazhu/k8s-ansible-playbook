@@ -1,0 +1,6 @@
+- name: Install kubernetes softwares
+  include_tasks: "{{ item.task }}"
+  loop:
+    - { task: "ubuntu.yaml", os_type: "Ubuntu" }
+  when:
+    - (ansible_facts['distribution'] == item.os_type)

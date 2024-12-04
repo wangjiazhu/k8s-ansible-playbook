@@ -1,0 +1,54 @@
+# 创建工作目录
+- name: Create work dir for k8s
+  file:
+    path: /server/k8s
+    state: directory
+    mode: '0755'
+
+# 下载/拷贝安装包
+- name: Copy cri-dockerd packages to {{ ansible_facts['hostname'] }} 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}" 
+  loop:
+    - { src: 'files/cri-dockerd-0.3.14.amd64.tgz', dest: '/server/k8s/cri-dockerd-0.3.14.tgz', arch: 'x86_64' }
+    - { src: 'files/cri-dockerd-0.3.14.arm64.tgz', dest: '/server/k8s/cri-dockerd-0.3.14.tgz', arch: 'aarch64' }
+  when: 
+    - (ansible_facts['architecture'] == item.arch and cri_dockerd_version == '0.3.14')
+
+- name: Download version {{ cri_dockerd_version }} cri-dockerd to {{ ansible_facts['hostname'] }}
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  loop: 
+    - { url: "https://github.com/Mirantis/cri-dockerd/releases/download/v{{ cri_dockerd_version }}/cri-dockerd-{{ cri_dockerd_version }}.arm64.tgz",  dest: "/server/k8s/cri-dockerd-{{ cri_dockerd_version }}.tgz", arch: "aarch64" }
+    - { url: "https://github.com/Mirantis/cri-dockerd/releases/download/v{{ cri_dockerd_version }}/cri-dockerd-{{ cri_dockerd_version }}.amd64.tgz",  dest: "/server/k8s/cri-dockerd-{{ cri_dockerd_version }}.tgz", arch: "x86_64" }
+  when:
+    - (ansible_facts['architecture'] == item.arch and cri_dockerd_version != '0.3.14')
+
+- name: Extract cri-dockerd packages
+  command: "{{ item }}"
+  loop:
+    - tar xzf /server/k8s/cri-dockerd-0.3.14.tgz -C /server/k8s/
+    - cp /server/k8s/cri-dockerd/cri-dockerd /usr/bin
+    - chmod 0755 /usr/bin/cri-dockerd
+  ignore_errors: yes
+
+- name: Prepare cri-dockerd.service & cri-dockerd.sock
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}" 
+  loop:
+    - { src: 'files/cri-dockerd.service', dest: '/etc/systemd/system/cri-dockerd.service' }
+    - { src: 'files/cri-dockerd.socket', dest: '/etc/systemd/system/cri-dockerd.socket' }
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Start cri-dockerd service
+  systemd:
+    name: cri-dockerd
+    state: started
+    enabled: yes

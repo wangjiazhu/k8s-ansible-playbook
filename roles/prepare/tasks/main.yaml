@@ -1,0 +1,6 @@
+- include_tasks: repo.yaml
+- include_tasks: firewalld.yaml
+- include_tasks: selinux.yaml
+- include_tasks: swap.yaml
+- include_tasks: kernel-modules.yaml
+- include_tasks: kernel-params.yaml

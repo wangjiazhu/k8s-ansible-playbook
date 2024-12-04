@@ -1,0 +1,17 @@
+- name: Install ufw for ubuntu
+  apt:
+    update_cache: yes
+    name: ufw
+    state: present
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Shutdown firewalld or ufw
+  systemd:
+    name: "{{ item.name }}"
+    state: stopped
+    enabled: no
+  loop:
+    - { name: "firewalld", os_family: "RedHat" }
+    - { name: "ufw", os_family: "Debian" }
+  when:
+    - (ansible_facts['os_family'] == item.os_family)

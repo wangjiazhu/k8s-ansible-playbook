@@ -1,0 +1,14 @@
+- name: Update apt source
+  copy:
+    src: "{{ item.file }}"
+    dest: /etc/apt/sources.list
+    backup: yes
+  loop:
+    - { file: "../files/ububtu20.04.sources.list", os_type: "Ubuntu", os_version: "20.04", arch: "x86_64" }
+    - { file: "../files/ububtu22.04.sources.list", os_type: "Ubuntu", os_version: "22.04", arch: "x86_64" }
+    - { file: "../files/ububtu24.04.sources.list", os_type: "Ubuntu", os_version: "24.04", arch: "x86_64" }
+    - { file: "../files/ububtu-ports20.04.sources.list", os_type: "Ubuntu", os_version: "20.04", arch: "arrch64" }
+    - { file: "../files/ububtu-ports22.04.sources.list", os_type: "Ubuntu", os_version: "22.04", arch: "arrch64" }
+    - { file: "../files/ububtu-ports24.04.sources.list", os_type: "Ubuntu", os_version: "24.04", arch: "arrch64" }
+  when:
+    - (ansible_facts['distribution'] == item.os_type and ansible_facts['distribution_version'] == item.os_version and ansible_facts['architecture'] == item.arch)
