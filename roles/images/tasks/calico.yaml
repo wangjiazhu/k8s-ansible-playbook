@@ -1,0 +1,29 @@
+# 检查控制节点是否存在calico相关镜像包
+- name: Check version {{ calico_version }} calico images is exists
+  stat:
+    path: "../roles/images/release-v{{ calico_version }}.tgz"
+  delegate_to: localhost
+  run_once: true
+  register: calico_exist
+
+- name: Download version {{ calico_version }} calico images 
+  get_url:
+    url: https://github.com/projectcalico/calico/releases/download/v{{ calico_version }}/release-v{{ calico_version }}.tgz
+    dest: files/release-v{{ calico_version }}.tgz
+  delegate_to: localhost
+  run_once: true
+  when: not calico_exist.stat.exists
+
+- name: Copy verison {{ calico_version }} images to node
+  copy:
+    src: files/release-v{{ calico_version }}.tgz
+    dest: /server/k8s/release-v{{ calico_version }}.tgz
+
+- name: Load calico images
+  script:
+    cmd: "files/calico.sh {{ calico_version }}"
+  register: script_output
+
+- name: Print Load calico images output
+  debug:
+    var: script_output.stdout_lines

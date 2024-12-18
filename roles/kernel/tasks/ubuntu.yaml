@@ -35,8 +35,19 @@
     var: update_initramfs_result
   when: ansible_facts['distribution'] == 'Ubuntu'
 
+- name: Stop update intramfs function
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_SAVEDEFAULT=.*'
+    line: "GRUB_SAVEDEFAULT=false"
+    state: present
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
 - name: Update grub
-  shell: sed -i "s|^\(GRUB_DEFAULT=\)\(.*\)|\1\"Advanced options for Ubuntu>Ubuntu, with Linux {{ ubuntu_kernel }}-generic\"|" /etc/default/grub
+  shell: "{{ item }}"
+  loop:
+    - sed -i "s|^\(GRUB_DEFAULT=\)\(.*\)|\1\"Advanced options for Ubuntu>Ubuntu, with Linux {{ ubuntu_kernel }}-generic\"|" /etc/default/grub
+    - update-grub
   register: update_grub_result
   when: ansible_facts['distribution'] == 'Ubuntu'
 

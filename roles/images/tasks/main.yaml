@@ -1,0 +1,2 @@
+# - include_tasks: calico.yaml
+- include_tasks: k8s.yaml

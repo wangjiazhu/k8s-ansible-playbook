@@ -9,16 +9,16 @@
     进入k8s-ansible-playbook目录，找到hosts文件，添加如下内容：
     ```yaml
     [controller]
-    master-01-ipaddr
-    master-02-ipaddr
+    master-01-ipaddr ansible_ssh_private_key_file=/root/.ssh/id_rsa
+    master-02-ipaddr ansible_ssh_private_key_file=/root/.ssh/id_rsa
     ...
-    master-xx-ipaddr
+    master-xx-ipaddr ansible_ssh_private_key_file=/root/.ssh/id_rsa
 
     [worker]
-    worker-01-ipaddr
-    worker-02-ipaddr
+    worker-01-ipaddr ansible_ssh_private_key_file=/root/.ssh/id_rsa
+    worker-02-ipaddr ansible_ssh_private_key_file=/root/.ssh/id_rsa
     ...
-    worker-yy-ipaddr
+    worker-yy-ipaddr ansible_ssh_private_key_file=/root/.ssh/id_rsa
     ```
 * 执行命令
     ```bash

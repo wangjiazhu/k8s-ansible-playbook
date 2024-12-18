@@ -1,0 +1,8 @@
+- name: Download k8s v{{ kubernetes_version }} images
+  script:
+    cmd: "files/k8s.sh {{ kubernetes_version }} {{ image_repository }}"
+  register: script_output
+
+- name: Print download k8s images output
+  debug:
+    var: script_output.stdout_lines

@@ -8,7 +8,7 @@ Requires=cri-dockerd.socket
 [Service]
 Type=notify
 # ExecStart=/usr/bin/cri-dockerd --container-runtime-endpoint fd://
-ExecStart=/usr/bin/cri-dockerd --container-runtime-endpoint fd:// --pod-infra-container-image=ncr.nioint.com/k8s.io/pause:3.9
+ExecStart=/usr/bin/cri-dockerd --container-runtime-endpoint fd:// --pod-infra-container-image={{ image_repository }}/pause:3.9
 ExecReload=/bin/kill -s HUP $MAINPID
 TimeoutSec=0
 RestartSec=2

@@ -35,12 +35,22 @@
     - chmod 0755 /usr/bin/cri-dockerd
   ignore_errors: yes
 
-- name: Prepare cri-dockerd.service & cri-dockerd.sock
+- name: Prepare cri-dockerd.service
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - { src: 'files/cri-dockerd.service', dest: '/etc/systemd/system/cri-dockerd.service' }
+
+
+- name: Prepare cri-dockerd.sock
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}" 
   loop:
-    - { src: 'files/cri-dockerd.service', dest: '/etc/systemd/system/cri-dockerd.service' }
     - { src: 'files/cri-dockerd.socket', dest: '/etc/systemd/system/cri-dockerd.socket' }
 
 - name: Reload systemd
